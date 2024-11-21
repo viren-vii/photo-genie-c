@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "photoGENIEc",
+  "version": "1.0.0",
+  "description": "A simple chrome extension to generate photos from text and creative prompts",
+  "key": "fngfnbbmaboleojpneaffaoafghkjfgi",
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "permissions": [
+    "scripting",
+    "aiLanguageModelOriginTrial",
+    "tabs",
+    "activeTab",
+    "sidePanel",
+    "contextMenus",
+    "storage"
+  ],
+  "trial_tokens": [
+    "AtUP245GPpmxzm1s+CEU3aCL9Bh8L+/LD9gTvYvY0LX77DWePTtFdkPoiYGkGnjwwHLcD22NeaqMt5m/i0AcSQEAAAB4eyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vZm5nZm5iYm1hYm9sZW9qcG5lYWZmYW9hZmdoa2pmZ2kiLCJmZWF0dXJlIjoiQUlQcm9tcHRBUElGb3JFeHRlbnNpb24iLCJleHBpcnkiOjE3NjA0ODYzOTl9"
+  ],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
