@@ -1,10 +1,9 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { GeminiNano } from "../utils/nano";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import Markdown from "markdown-to-jsx";
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
-import TabsContext from "./tabs.context";
 
 export type MessageProps = {
   role: "user" | "assistant";
@@ -57,12 +56,15 @@ const WriteTab = ({
   nano,
   messages,
   setMessages,
+  writeTabData,
+  setWriteTabData,
 }: {
   nano: GeminiNano;
   messages: MessageProps[];
   setMessages: React.Dispatch<React.SetStateAction<MessageProps[]>>;
+  writeTabData: string | null;
+  setWriteTabData: (data: string | null) => void;
 }) => {
-  const { writeTabData } = useContext(TabsContext);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -72,7 +74,7 @@ const WriteTab = ({
 
   useEffect(() => {
     if (writeTabData) {
-      console.log("writeTabData", writeTabData);
+      console.log("WriteTab: Setting prompt suggestion", writeTabData);
       setPromptSuggestions((prev) => [writeTabData, ...prev]);
     }
   }, [writeTabData]);

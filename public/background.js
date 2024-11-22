@@ -13,8 +13,12 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
   console.log("tab.windowId", tab.windowId);
   if (tab.windowId !== -1) {
-    await chrome.sidePanel.open({
-      windowId: tab.windowId,
-    });
+    try {
+      await chrome.sidePanel.open({
+        windowId: tab.windowId
+      });
+    } catch (error) {
+      console.error('Error opening side panel:', error);
+    }
   }
 });
