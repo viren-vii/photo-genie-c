@@ -7,30 +7,31 @@ import {
 } from "../components/ui/tabs";
 import WriteTab from "./write";
 import SeeTab from "./see";
-import { CreativeAssistantBasePrompt, GeminiNano } from "../utils/nano";
+import { CreativeAssistantBasePrompt, NanoPrompt } from "../utils/nano";
 import { cn } from "../lib/utils";
 import { useAtom, useSetAtom } from "jotai";
 import {
   activeThreadAtom,
   seeTabDataAtom,
-  writeTabDataAtom,
+  improveTabDataAtom,
   ThreadDataKey,
   activeTabAtom,
-  nanoAtom,
+  nanoPromptAtom,
   messagesAtom,
 } from "../lib/atoms";
 import { Button } from "../components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { getFromStorage, setToStorage } from "../utils/chrome.storage";
 import Board from "./board";
+import Improve from "./improve";
 
-export const tabs = ["board", "write", "see"] as const;
+export const tabs = ["board", "write", "improve", "see"] as const;
 
 const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
-  const [nano, setNano] = useAtom(nanoAtom);
+  const [nano, setNano] = useAtom(nanoPromptAtom);
   useEffect(() => {
     (async () => {
-      const nano = new GeminiNano(CreativeAssistantBasePrompt);
+      const nano = new NanoPrompt(CreativeAssistantBasePrompt);
       console.log("reloading nano");
       setNano(nano);
     })();
@@ -41,7 +42,7 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
 
   const [activeThread, setActiveThread] = useAtom(activeThreadAtom);
   const storageKey = `${ThreadDataKey}-${activeThread?.threadId}`;
-  const setWriteTabData = useSetAtom(writeTabDataAtom);
+  const setImproveTabData = useSetAtom(improveTabDataAtom);
   const setSeeTabData = useSetAtom(seeTabDataAtom);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
       try {
         if (info.selectionText) {
           console.log("[App] Context menu: handling text", info.selectionText);
-          setWriteTabData(info.selectionText);
+          setImproveTabData(info.selectionText);
           setActiveTab("write");
         } else if (info.srcUrl && info.mediaType === "image") {
           console.log("[App] Context menu: handling image", info.srcUrl);
@@ -116,6 +117,9 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
         </TabsContent>
         <TabsContent value="write" className="h-[800px]">
           <WriteTab />
+        </TabsContent>
+        <TabsContent value="improve" className="h-[800px]">
+          <Improve />
         </TabsContent>
         <TabsContent value="see" className="h-[800px]">
           <SeeTab />

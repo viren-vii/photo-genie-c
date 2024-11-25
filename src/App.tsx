@@ -8,7 +8,7 @@ import {
   messagesAtom,
   threadsAtom,
   ThreadsKey,
-  writeTabDataAtom,
+  improveTabDataAtom,
 } from "./lib/atoms";
 import { useAtomValue, useAtom, useSetAtom } from "jotai";
 import { useEffect } from "react";
@@ -20,7 +20,7 @@ function App() {
   const setMessages = useSetAtom(messagesAtom);
   const setBoardIdeas = useSetAtom(boardIdeasAtom);
   const setSeeTabData = useSetAtom(seeTabDataAtom);
-  const setWriteTabData = useSetAtom(writeTabDataAtom);
+  const setImproveTabData = useSetAtom(improveTabDataAtom);
 
   useEffect(() => {
     (async () => {
@@ -37,7 +37,7 @@ function App() {
     setMessages([]);
     setBoardIdeas([]);
     setSeeTabData(null);
-    setWriteTabData(null);
+    setImproveTabData(null);
   }, [activeThread]);
 
   return (

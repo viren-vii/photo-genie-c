@@ -7,8 +7,7 @@ import {
   activeThreadId,
   boardIdeasAtom,
   messagesAtom,
-  nanoAtom,
-  writeTabDataAtom,
+  nanoPromptAtom,
 } from "../lib/atoms";
 import { useAtom, useAtomValue } from "jotai";
 import { CheckIcon, PlusIcon } from "lucide-react";
@@ -82,20 +81,10 @@ const PromptSuggestions = ({
 const WriteTab = () => {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const writeTabData = useAtomValue(writeTabDataAtom);
-  const nano = useAtomValue(nanoAtom);
+  const nano = useAtomValue(nanoPromptAtom);
   const [messages, setMessages] = useAtom(messagesAtom);
 
   const bottomRef = useRef<HTMLDivElement>(null);
-
-  const [promptSuggestions, setPromptSuggestions] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (writeTabData) {
-      console.log("WriteTab: Setting prompt suggestion", writeTabData);
-      setPromptSuggestions((prev) => [writeTabData, ...prev]);
-    }
-  }, [writeTabData]);
 
   useEffect(() => {
     if (bottomRef.current) {
@@ -104,7 +93,6 @@ const WriteTab = () => {
   }, [messages]);
 
   const generate = async () => {
-    setPromptSuggestions([]);
     setMessages((prev) => [...prev, { role: "user", content: prompt }]);
     setPrompt("");
     setLoading(true);
@@ -130,12 +118,12 @@ const WriteTab = () => {
         ))}
       </div>
       <div className="flex flex-col gap-2 mt-auto">
-        {promptSuggestions.length > 0 && (
+        {/* {promptSuggestions.length > 0 && (
           <PromptSuggestions
             promptSuggestions={promptSuggestions}
             setPrompt={setPrompt}
           />
-        )}
+        )} */}
         <div className="flex gap-2 items-center">
           <Input
             value={prompt}

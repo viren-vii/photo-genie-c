@@ -1,7 +1,8 @@
-// Shared self.ai APIs
-
 interface Window {
   ai: AI;
+  summarizer: AISummarizerFactory;
+  writer: AIWriterFactory;
+  rewriter: AIRewriterFactory;
 }
 
 interface WorkerGlobalScope {
@@ -20,7 +21,13 @@ interface AICreateMonitor extends EventTarget {
 
 type AICreateMonitorCallback = (monitor: AICreateMonitor) => void;
 
-type AICapabilityAvailability = "readily" | "after-download" | "no";
+type AICapabilityAvailability =
+  | "readily"
+  | "after-download"
+  | "no"
+  | "available"
+  | "unavailable"
+  | "unknown";
 
 // LanguageModel
 
@@ -82,3 +89,162 @@ interface AILanguageModelPromptOptions {
 }
 
 type AILanguageModelPromptRole = "system" | "user" | "assistant";
+
+// Summarizer
+
+interface AISummarizerFactory {
+  create(options?: AISummarizerCreateOptions): Promise<AISummarizer>;
+  capabilities(): Promise<AISummarizerCapabilities>;
+}
+
+interface AISummarizer {
+  summarize(
+    input: string,
+    options?: AISummarizerSummarizeOptions
+  ): Promise<string>;
+  summarizeStreaming(
+    input: string,
+    options?: AISummarizerSummarizeOptions
+  ): ReadableStream;
+
+  readonly sharedContext: string;
+  readonly type: AISummarizerType;
+  readonly format: AISummarizerFormat;
+  readonly length: AISummarizerLength;
+
+  destroy(): void;
+}
+
+interface AISummarizerCapabilities {
+  readonly available: AICapabilityAvailability;
+
+  createOptionsAvailable(
+    options: AISummarizerCreateCoreOptions
+  ): AICapabilityAvailability;
+  languageAvailable(languageTag: string): AICapabilityAvailability;
+}
+
+interface AISummarizerCreateCoreOptions {
+  type?: AISummarizerType;
+  format?: AISummarizerFormat;
+  length?: AISummarizerLength;
+}
+
+interface AISummarizerCreateOptions extends AISummarizerCreateCoreOptions {
+  signal?: AbortSignal;
+  monitor?: AICreateMonitorCallback;
+  sharedContext?: string;
+}
+
+interface AISummarizerSummarizeOptions {
+  signal?: AbortSignal;
+  context?: string;
+}
+
+type AISummarizerType = "tl;dr" | "key-points" | "teaser" | "headline";
+type AISummarizerFormat = "plain-text" | "markdown";
+type AISummarizerLength = "short" | "medium" | "long";
+
+// Add Writer interfaces
+interface AIWriterFactory {
+  create(options?: AIWriterCreateOptions): Promise<AIWriter>;
+  capabilities(): Promise<AIWriterCapabilities>;
+}
+
+interface AIWriter {
+  write(writingTask: string, options?: AIWriterWriteOptions): Promise<string>;
+  writeStreaming(
+    writingTask: string,
+    options?: AIWriterWriteOptions
+  ): ReadableStream;
+
+  readonly sharedContext: string;
+  readonly tone: AIWriterTone;
+  readonly format: AIWriterFormat;
+  readonly length: AIWriterLength;
+
+  destroy(): void;
+}
+
+interface AIWriterCapabilities {
+  readonly available: AICapabilityAvailability;
+
+  createOptionsAvailable(
+    options: AIWriterCreateCoreOptions
+  ): AICapabilityAvailability;
+  languageAvailable(languageTag: string): AICapabilityAvailability;
+}
+
+interface AIWriterCreateCoreOptions {
+  tone?: AIWriterTone;
+  format?: AIWriterFormat;
+  length?: AIWriterLength;
+}
+
+interface AIWriterCreateOptions extends AIWriterCreateCoreOptions {
+  signal?: AbortSignal;
+  monitor?: AICreateMonitorCallback;
+  sharedContext?: string;
+}
+
+interface AIWriterWriteOptions {
+  context?: string;
+  signal?: AbortSignal;
+}
+
+// Add Writer-specific types
+type AIWriterTone = "formal" | "neutral" | "casual";
+type AIWriterFormat = "plain-text" | "markdown";
+type AIWriterLength = "short" | "medium" | "long";
+
+// Add Rewriter interfaces
+interface AIRewriterFactory {
+  create(options?: AIRewriterCreateOptions): Promise<AIRewriter>;
+  capabilities(): Promise<AIRewriterCapabilities>;
+}
+
+interface AIRewriter {
+  rewrite(input: string, options?: AIRewriterRewriteOptions): Promise<string>;
+  rewriteStreaming(
+    input: string,
+    options?: AIRewriterRewriteOptions
+  ): ReadableStream;
+
+  readonly sharedContext: string;
+  readonly tone: AIRewriterTone;
+  readonly format: AIRewriterFormat;
+  readonly length: AIRewriterLength;
+
+  destroy(): void;
+}
+
+interface AIRewriterCapabilities {
+  readonly available: AICapabilityAvailability;
+
+  createOptionsAvailable(
+    options: AIRewriterCreateCoreOptions
+  ): AICapabilityAvailability;
+  languageAvailable(languageTag: string): AICapabilityAvailability;
+}
+
+interface AIRewriterCreateCoreOptions {
+  tone?: AIRewriterTone;
+  format?: AIRewriterFormat;
+  length?: AIRewriterLength;
+}
+
+interface AIRewriterCreateOptions extends AIRewriterCreateCoreOptions {
+  signal?: AbortSignal;
+  monitor?: AICreateMonitorCallback;
+  sharedContext?: string;
+}
+
+interface AIRewriterRewriteOptions {
+  context?: string;
+  signal?: AbortSignal;
+}
+
+// Add Rewriter-specific types
+type AIRewriterTone = "as-is" | "more-formal" | "more-casual";
+type AIRewriterFormat = "as-is" | "plain-text" | "markdown";
+type AIRewriterLength = "as-is" | "shorter" | "longer";
