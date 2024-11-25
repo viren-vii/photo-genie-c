@@ -1,9 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
-import { GeminiNano } from "../utils/nano";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import Markdown from "markdown-to-jsx";
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
+import {
+  activeThreadId,
+  boardIdeasAtom,
+  messagesAtom,
+  nanoAtom,
+  writeTabDataAtom,
+} from "../lib/atoms";
+import { useAtom, useAtomValue } from "jotai";
+import { CheckIcon, PlusIcon } from "lucide-react";
 
 export type MessageProps = {
   role: "user" | "assistant";
@@ -11,15 +19,34 @@ export type MessageProps = {
 };
 
 const Message = ({ message }: { message: MessageProps }) => {
+  const [boardIdeas, setBoardIdeas] = useAtom(boardIdeasAtom);
+  const alreadyAdded = boardIdeas.includes(message.content);
   return (
     <div
       className={`flex gap-2 ${
         message.role === "user" ? "flex-row-reverse" : ""
       }`}>
       <div className="w-10 h-10 shrink-0 bg-secondary rounded-full"></div>
-      <Markdown className="bg-secondary rounded-md p-2 px-4">
-        {message.content}
-      </Markdown>
+      <div className="flex flex-col gap-2">
+        <Markdown className="bg-secondary rounded-md p-2 px-4 relative">
+          {message.content}
+        </Markdown>
+        {message.role === "assistant" ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-fit"
+            disabled={alreadyAdded}
+            onClick={() => setBoardIdeas((prev) => [message.content, ...prev])}>
+            {alreadyAdded ? (
+              <CheckIcon className="w-4 h-4" />
+            ) : (
+              <PlusIcon className="w-4 h-4" />
+            )}
+            {alreadyAdded ? "Added to board" : "Add to board"}
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 };
@@ -40,7 +67,7 @@ const PromptSuggestions = ({
             <Button
               size="sm"
               variant="outline"
-              key={`suggestion-${index}`}
+              key={`suggestion-${activeThreadId.toString()}-${index}`}
               onClick={() => setPrompt(suggestion)}>
               {suggestion}
             </Button>
@@ -52,21 +79,12 @@ const PromptSuggestions = ({
   );
 };
 
-const WriteTab = ({
-  nano,
-  messages,
-  setMessages,
-  writeTabData,
-  setWriteTabData,
-}: {
-  nano: GeminiNano;
-  messages: MessageProps[];
-  setMessages: React.Dispatch<React.SetStateAction<MessageProps[]>>;
-  writeTabData: string | null;
-  setWriteTabData: (data: string | null) => void;
-}) => {
+const WriteTab = () => {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const writeTabData = useAtomValue(writeTabDataAtom);
+  const nano = useAtomValue(nanoAtom);
+  const [messages, setMessages] = useAtom(messagesAtom);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -90,9 +108,12 @@ const WriteTab = ({
     setMessages((prev) => [...prev, { role: "user", content: prompt }]);
     setPrompt("");
     setLoading(true);
-    const result = await nano.doPrompt(prompt);
+    const result = await nano?.doPrompt(prompt);
     setLoading(false);
-    setMessages((prev) => [...prev, { role: "assistant", content: result }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: result || "" },
+    ]);
   };
 
   return (
@@ -100,7 +121,10 @@ const WriteTab = ({
       <div className="flex flex-col gap-2 overflow-y-auto py-4 px-2">
         {messages.map((message, index) => (
           <>
-            <Message key={`message-${index}`} message={message} />
+            <Message
+              key={`message-${activeThreadId.toString()}-${index}`}
+              message={message}
+            />
             <div style={{ float: "left", clear: "both" }} ref={bottomRef}></div>
           </>
         ))}
@@ -123,6 +147,7 @@ const WriteTab = ({
                 generate();
               }
             }}
+            disabled={loading}
           />
           <Button onClick={generate} disabled={loading || prompt.length === 0}>
             {loading ? "Thinking..." : "Generate"}

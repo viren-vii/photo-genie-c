@@ -1,17 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import { analyzeImage } from "../utils/actions";
+import { useAtomValue, useSetAtom } from "jotai";
+import { seeTabDataAtom, activeTabAtom } from "../lib/atoms";
 
-const SeeTab = ({
-  seeTabData,
-  setSeeTabData,
-  setActiveTab,
-}: {
-  seeTabData: string | null;
-  setSeeTabData: (data: string | null) => void;
-  setActiveTab: (tab: "write" | "see") => void;
-}) => {
+const SeeTab = () => {
   const [analysis, setAnalysis] = useState<string | null>(null);
+  const seeTabData = useAtomValue(seeTabDataAtom);
+  const setActiveTab = useSetAtom(activeTabAtom);
 
   useEffect(() => {
     (async () => {

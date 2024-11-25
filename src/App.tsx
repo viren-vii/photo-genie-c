@@ -1,14 +1,26 @@
 import Layout from "./layout";
 import AppTabs from "./tabs";
 import Menu, { MenuItem } from "./menu";
-import { activeThreadAtom, threadsAtom, ThreadsKey } from "./lib/atoms";
-import { useAtomValue, useAtom } from "jotai";
+import {
+  activeThreadAtom,
+  boardIdeasAtom,
+  seeTabDataAtom,
+  messagesAtom,
+  threadsAtom,
+  ThreadsKey,
+  writeTabDataAtom,
+} from "./lib/atoms";
+import { useAtomValue, useAtom, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { getFromStorage, setToStorage } from "./utils/chrome.storage";
 
 function App() {
   const [threads, setThreads] = useAtom(threadsAtom);
   const activeThread = useAtomValue(activeThreadAtom);
+  const setMessages = useSetAtom(messagesAtom);
+  const setBoardIdeas = useSetAtom(boardIdeasAtom);
+  const setSeeTabData = useSetAtom(seeTabDataAtom);
+  const setWriteTabData = useSetAtom(writeTabDataAtom);
 
   useEffect(() => {
     (async () => {
@@ -20,6 +32,13 @@ function App() {
   useEffect(() => {
     setToStorage(ThreadsKey, threads);
   }, [threads]);
+
+  useEffect(() => {
+    setMessages([]);
+    setBoardIdeas([]);
+    setSeeTabData(null);
+    setWriteTabData(null);
+  }, [activeThread]);
 
   return (
     <Layout>{!activeThread ? <Menu /> : <AppTabs className="w-full" />}</Layout>

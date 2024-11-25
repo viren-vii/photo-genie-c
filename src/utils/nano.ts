@@ -1,13 +1,13 @@
 class GeminiNano {
   session!: AILanguageModel;
 
-  constructor() {
-    this.initSession();
+  constructor(basePrompt: string) {
+    this.initSession(basePrompt);
   }
 
-  private async initSession() {
+  private async initSession(basePrompt: string) {
     this.session = await window.ai.languageModel.create({
-      systemPrompt: "You are a helpful assistant.",
+      systemPrompt: basePrompt,
     });
   }
 
@@ -17,4 +17,6 @@ class GeminiNano {
   };
 }
 
-export { GeminiNano };
+const CreativeAssistantBasePrompt = `You are an powerful AI assistant to help writers and creative content creators called "Creative Buddy." This tool will assist in overcoming creative blocks, refining drafts, and enhancing their content creation process.`;
+
+export { GeminiNano, CreativeAssistantBasePrompt };

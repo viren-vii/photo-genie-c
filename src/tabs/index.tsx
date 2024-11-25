@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { MessageProps } from "./write";
+import React, { useEffect } from "react";
 import {
   Tabs,
   TabsList,
@@ -8,35 +7,42 @@ import {
 } from "../components/ui/tabs";
 import WriteTab from "./write";
 import SeeTab from "./see";
-import { GeminiNano } from "../utils/nano";
+import { CreativeAssistantBasePrompt, GeminiNano } from "../utils/nano";
 import { cn } from "../lib/utils";
-import { useAtom } from "jotai";
-import { activeThreadAtom } from "../lib/atoms";
-import { Button } from "../components/ui/button";
+import { useAtom, useSetAtom } from "jotai";
 import {
-  ChevronLeft,
-  LucideSeparatorVertical,
-  SeparatorVertical,
-  SeparatorVerticalIcon,
-} from "lucide-react";
-import { Separator } from "../components/ui/separator";
+  activeThreadAtom,
+  seeTabDataAtom,
+  writeTabDataAtom,
+  ThreadDataKey,
+  activeTabAtom,
+  nanoAtom,
+  messagesAtom,
+} from "../lib/atoms";
+import { Button } from "../components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { getFromStorage, setToStorage } from "../utils/chrome.storage";
+import Board from "./board";
+
+export const tabs = ["board", "write", "see"] as const;
 
 const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
-  const [nano, setNano] = useState<GeminiNano | null>(null);
+  const [nano, setNano] = useAtom(nanoAtom);
   useEffect(() => {
     (async () => {
-      const nano = new GeminiNano();
+      const nano = new GeminiNano(CreativeAssistantBasePrompt);
       console.log("reloading nano");
       setNano(nano);
     })();
   }, []);
 
-  const [messages, setMessages] = useState<MessageProps[]>([]);
-  const [activeTab, setActiveTab] = useState<"write" | "see">("write");
-  const [writeTabData, setWriteTabData] = useState<string | null>(null);
-  const [seeTabData, setSeeTabData] = useState<string | null>(null);
+  const [messages, setMessages] = useAtom(messagesAtom);
+  const [activeTab, setActiveTab] = useAtom(activeTabAtom);
 
   const [activeThread, setActiveThread] = useAtom(activeThreadAtom);
+  const storageKey = `${ThreadDataKey}-${activeThread?.threadId}`;
+  const setWriteTabData = useSetAtom(writeTabDataAtom);
+  const setSeeTabData = useSetAtom(seeTabDataAtom);
 
   useEffect(() => {
     const listener = async (info: chrome.contextMenus.OnClickData) => {
@@ -59,6 +65,25 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
     return () => chrome.contextMenus?.onClicked.removeListener(listener);
   }, []);
 
+  useEffect(() => {
+    if (messages.length > 0) {
+      (async () => {
+        setToStorage(storageKey, {
+          threadId: activeThread?.threadId,
+          systemPrompt: CreativeAssistantBasePrompt,
+          messages,
+        });
+      })();
+    }
+  }, [messages, activeThread, storageKey]);
+
+  useEffect(() => {
+    (async () => {
+      const oldThreadData = await getFromStorage(storageKey);
+      setMessages(oldThreadData ? JSON.parse(oldThreadData)?.messages : []);
+    })();
+  }, [activeThread, storageKey]);
+
   if (!nano) return <div>Loading session...</div>;
 
   return (
@@ -80,28 +105,20 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
         }
         className="w-full ml-auto">
         <TabsList className="w-full justify-between">
-          <TabsTrigger className="w-full" value="write">
-            Write
-          </TabsTrigger>
-          <TabsTrigger className="w-full" value="see">
-            See
-          </TabsTrigger>
+          {tabs.map((tab) => (
+            <TabsTrigger className="w-full" value={tab}>
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </TabsTrigger>
+          ))}
         </TabsList>
+        <TabsContent value="board" className="h-[800px]">
+          <Board />
+        </TabsContent>
         <TabsContent value="write" className="h-[800px]">
-          <WriteTab
-            nano={nano}
-            messages={messages}
-            setMessages={setMessages}
-            writeTabData={writeTabData}
-            setWriteTabData={setWriteTabData}
-          />
+          <WriteTab />
         </TabsContent>
         <TabsContent value="see" className="h-[800px]">
-          <SeeTab
-            seeTabData={seeTabData}
-            setSeeTabData={setSeeTabData}
-            setActiveTab={setActiveTab}
-          />
+          <SeeTab />
         </TabsContent>
       </Tabs>
     </div>

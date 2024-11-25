@@ -28,7 +28,7 @@ import { cn } from "../lib/utils";
 
 export type MenuItem = {
   title: string;
-  thread_id: string;
+  threadId: string;
   dateTime: string;
 };
 
@@ -44,7 +44,7 @@ const DeleteThreadDialog = ({
   const deleteThread = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setLoading(true);
-    setThreads(threads.filter((t) => t.thread_id !== thread.thread_id));
+    setThreads(threads.filter((t) => t.threadId !== thread.threadId));
     setLoading(false);
   };
 
@@ -80,7 +80,7 @@ const CreateThreadDialog = ({ children }: { children: React.ReactNode }) => {
   const createNewThread = () => {
     const newThread = {
       title: threadTitle,
-      thread_id: crypto.randomUUID() + "@" + Date.now().toString(),
+      threadId: crypto.randomUUID() + "@" + Date.now().toString(),
       dateTime: new Date().toISOString(),
     };
     setThreads([...threads, newThread]);
@@ -131,7 +131,7 @@ const Menu = () => {
             <div className="flex flex-col w-[450px] hover:cursor-pointer max-h-[500px]">
               {threads?.map((item) => (
                 <div
-                  key={item.thread_id}
+                  key={item.threadId}
                   className="flex flex-1 group"
                   onClick={() => setActiveThread(item)}>
                   <div className="flex w-full flex-col gap-1 p-2 border-b-[1px] font-medium shadow-sm border-secondary hover:bg-secondary transition-all duration-500 ease-in-out">
