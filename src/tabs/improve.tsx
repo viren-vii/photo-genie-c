@@ -14,12 +14,13 @@ import {
   BriefcaseBusiness,
   FileCode,
   FileText,
-  PenLine,
   X,
   Plus,
   Check,
   Sparkles,
-  Newspaper,
+  Text,
+  SignalMedium,
+  EqualApproximately,
 } from "lucide-react";
 import { NanoPrompt } from "../utils/nano";
 import {
@@ -40,17 +41,17 @@ const RewriteOptions = [
     key: "tone",
     options: [
       {
-        label: "As It Is",
+        label: "Same",
         value: "as-is",
-        icon: <PenLine className="w-4 h-4" />,
+        icon: <EqualApproximately className="w-4 h-4" />,
       },
       {
-        label: "More Formal",
+        label: "Formal",
         value: "more-formal",
         icon: <BriefcaseBusiness className="w-4 h-4" />,
       },
       {
-        label: "More Casual",
+        label: "Casual",
         value: "more-casual",
         icon: <Smile className="w-4 h-4" />,
       },
@@ -61,9 +62,9 @@ const RewriteOptions = [
     key: "length",
     options: [
       {
-        label: "As It Is",
+        label: "Similar",
         value: "as-is",
-        icon: <PenLine className="w-4 h-4" />,
+        icon: <SignalMedium className="w-4 h-4" />,
       },
       {
         label: "Shorter",
@@ -82,7 +83,7 @@ const RewriteOptions = [
     key: "format",
     options: [
       {
-        label: "Plain Text",
+        label: "Plain",
         value: "plain-text",
         icon: <FileText className="w-4 h-4" />,
       },
@@ -103,7 +104,9 @@ const ImprovementInput = ({
   improvedText: string[];
 }) => {
   const [improveTabInput, setImproveTabInput] = useAtom(improveTabInputAtom);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState<"rewrite" | "ideate" | "title" | null>(
+    null
+  );
 
   const [selectedOptions, setSelectedOptions] = useState<{
     tone: AIRewriterTone;
@@ -116,7 +119,7 @@ const ImprovementInput = ({
   });
 
   const processText = async (type: "rewrite" | "ideate" | "title") => {
-    setIsLoading(true);
+    setLoading(type);
     const systemPrompt =
       type === "rewrite"
         ? `You are an expert paraphraser. You are supposed to rewrite the text provided by the user based on following instructions.
@@ -150,11 +153,11 @@ const ImprovementInput = ({
 
     const result = await rewriterNano.doPrompt(improveTabInput || "");
     setImprovedText([result, ...improvedText]);
-    setIsLoading(false);
+    setLoading(null);
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-2">
         <h1 className="font-bold">Your raw text:</h1>
         <Textarea
@@ -162,9 +165,9 @@ const ImprovementInput = ({
           onChange={(e) => setImproveTabInput(e.target.value)}
         />
       </div>
-      <div className="flex gap-2 items-center justify-center">
+      <div className="flex flex-wrap gap-2 items-center justify-center">
         {RewriteOptions.map((option) => (
-          <div key={option.label} className="flex flex-col gap-2">
+          <div key={option.label} className="flex flex-col gap-1">
             <span className="text-xs font-medium">{option.label}</span>
             <Select
               value={
@@ -177,7 +180,7 @@ const ImprovementInput = ({
                   [option.key]: value,
                 })
               }>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger>
                 <SelectValue placeholder={option.label} />
               </SelectTrigger>
               <SelectContent>
@@ -196,9 +199,12 @@ const ImprovementInput = ({
           </div>
         ))}
       </div>
-      <div className="flex gap-2 justify-center">
-        <Button onClick={() => processText("rewrite")} disabled={isLoading}>
-          {isLoading ? (
+      <div className="flex gap-2 justify-center flex-wrap">
+        <Button
+          onClick={() => processText("rewrite")}
+          disabled={!!loading}
+          size="sm">
+          {loading === "rewrite" ? (
             <>
               <Loader />
               <span>Rewriting...</span>
@@ -209,8 +215,11 @@ const ImprovementInput = ({
             </>
           )}
         </Button>
-        <Button onClick={() => processText("ideate")} disabled={isLoading}>
-          {isLoading ? (
+        <Button
+          onClick={() => processText("ideate")}
+          disabled={!!loading}
+          size="sm">
+          {loading === "ideate" ? (
             <>
               <Loader />
               <span>Ideating...</span>
@@ -221,15 +230,18 @@ const ImprovementInput = ({
             </>
           )}
         </Button>
-        <Button onClick={() => processText("title")} disabled={isLoading}>
-          {isLoading ? (
+        <Button
+          onClick={() => processText("title")}
+          disabled={!!loading}
+          size="sm">
+          {loading === "title" ? (
             <>
               <Loader />
-              <span>Generating Title...</span>
+              <span>Title</span>
             </>
           ) : (
             <>
-              Generate Title <Newspaper />
+              Title <Text />
             </>
           )}
         </Button>
@@ -290,7 +302,7 @@ const Improve = () => {
   const [improveTabOutput, setImproveTabOutput] = useAtom(improveTabOutputAtom);
 
   return (
-    <div className="flex flex-col gap-6 h-full px-4">
+    <div className="flex flex-col gap-4 h-full px-4">
       <ImprovementInput
         setImprovedText={setImproveTabOutput}
         improvedText={improveTabOutput}

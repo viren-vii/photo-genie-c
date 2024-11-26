@@ -10,7 +10,7 @@ import {
   nanoPromptAtom,
 } from "../lib/atoms";
 import { useAtom, useAtomValue } from "jotai";
-import { CheckIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, PlusIcon, User, Bot } from "lucide-react";
 import Loader from "../components/ui/loader";
 
 export type MessageProps = {
@@ -21,32 +21,50 @@ export type MessageProps = {
 const Message = ({ message }: { message: MessageProps }) => {
   const [boardIdeas, setBoardIdeas] = useAtom(boardIdeasAtom);
   const alreadyAdded = boardIdeas.includes(message.content);
+
   return (
-    <div
-      className={`flex gap-2 ${
-        message.role === "user" ? "flex-row-reverse" : ""
-      }`}>
-      <div className="w-10 h-10 shrink-0 bg-secondary rounded-full"></div>
-      <div className="flex flex-col gap-2">
-        <Markdown className="bg-secondary rounded-md p-2 px-4 relative">
+    <div className={`flex flex-col gap-2 my-2 `}>
+      <div
+        className={`flex flex-col gap-2 ${
+          message.role === "user" ? "items-end" : "items-start"
+        }`}>
+        <div className="flex items-center gap-2 text-[0.75rem] font-medium">
+          {message.role === "user" && "User"}
+          <div
+            className={`w-7 h-7 shrink-0 ${
+              message.role === "assistant"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground"
+            } rounded-full flex items-center justify-center border`}>
+            {message.role === "assistant" && <Bot className="w-4 h-4" />}
+            {message.role === "user" && <User className="w-4 h-4" />}
+          </div>
+          {message.role === "assistant" && "Assistant"}
+        </div>
+        <Markdown
+          className={`${
+            message.role === "assistant"
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-secondary-foreground"
+          } rounded-md p-2 px-4 relative`}>
           {message.content}
         </Markdown>
-        {message.role === "assistant" ? (
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-fit"
-            disabled={alreadyAdded}
-            onClick={() => setBoardIdeas((prev) => [message.content, ...prev])}>
-            {alreadyAdded ? (
-              <CheckIcon className="w-4 h-4" />
-            ) : (
-              <PlusIcon className="w-4 h-4" />
-            )}
-            {alreadyAdded ? "Added to board" : "Add to board"}
-          </Button>
-        ) : null}
       </div>
+      {message.role === "assistant" ? (
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-fit"
+          disabled={alreadyAdded}
+          onClick={() => setBoardIdeas((prev) => [message.content, ...prev])}>
+          {alreadyAdded ? (
+            <CheckIcon className="w-4 h-4" />
+          ) : (
+            <PlusIcon className="w-4 h-4" />
+          )}
+          {alreadyAdded ? "Added to board" : "Add to board"}
+        </Button>
+      ) : null}
     </div>
   );
 };
@@ -107,17 +125,16 @@ const WriteTab = () => {
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      <div className="flex flex-col gap-2 overflow-y-auto py-4 px-2">
+      <ScrollArea className="py-4 px-2">
         {messages.map((message, index) => (
-          <>
-            <Message
-              key={`message-${activeThreadId.toString()}-${index}`}
-              message={message}
-            />
-            <div style={{ float: "left", clear: "both" }} ref={bottomRef}></div>
-          </>
+          <Message
+            key={`message-${activeThreadId.toString()}-${index}`}
+            message={message}
+          />
         ))}
-      </div>
+        <div style={{ float: "left", clear: "both" }} ref={bottomRef}></div>
+        <ScrollBar />
+      </ScrollArea>
       <div className="flex flex-col gap-2 mt-auto">
         {/* {promptSuggestions.length > 0 && (
           <PromptSuggestions

@@ -131,8 +131,8 @@ const Menu = () => {
       {threads.length ? (
         <div className="flex flex-col gap-2 flex-1 items-center justify-center">
           <h1 className="text-2xl font-bold mb-12">Go to your old ideas</h1>
-          <ScrollArea>
-            <div className="flex flex-col w-[450px] hover:cursor-pointer max-h-[500px]">
+          <ScrollArea className="w-full">
+            <div className="flex flex-col w-full hover:cursor-pointer max-h-[500px]">
               {threads?.map((item) => (
                 <div
                   key={item.threadId}

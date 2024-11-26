@@ -67,15 +67,16 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
 
   return (
     <div className={cn(className, "flex flex-col gap-2")}>
-      <div className="flex relative items-center justify-center gap-2">
-        <Button
-          variant="ghost"
-          className="absolute left-0"
-          onClick={() => setActiveThread(null)}>
-          <ChevronLeft /> Go to Menu
-        </Button>
-        <h1 className="font-bold">PROJECT NAME</h1> &nbsp;/&nbsp;
-        {activeThread?.title}
+      <div className="flex flex-col gap-2 items-center">
+        <div className="flex relative items-center justify-center gap-2 w-full">
+          <Button
+            variant="ghost"
+            className="absolute left-0"
+            onClick={() => setActiveThread(null)}>
+            <ChevronLeft />
+          </Button>
+          {activeThread?.title}
+        </div>
       </div>
       <Tabs
         value={activeTab}
