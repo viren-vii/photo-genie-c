@@ -22,7 +22,7 @@ model = GenerativeModel("gemini-1.5-flash-002")
 
 class ImageRequest(BaseModel):
     image_url: str
-    prompt: str = "What is this image?"
+    prompt: str
 
 @app.post("/image_understanding")
 async def understand_image(request: ImageRequest):

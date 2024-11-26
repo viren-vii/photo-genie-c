@@ -260,14 +260,14 @@ const ImprovementOutput = ({
   const [boardIdeas, setBoardIdeas] = useAtom(boardIdeasAtom);
   return (
     improvedText.length > 0 && (
-      <ScrollArea className="h-full p-4 bg-muted rounded-md border">
-        <div className="flex flex-col gap-4">
+      <ScrollArea className="h-full p-2 bg-muted rounded-md border">
+        <div className="flex flex-col gap-2">
           <h1 className="font-bold">The output:</h1>
           {improvedText.map((text, i) => {
-            const isBoardIdea = boardIdeas.includes(text);
+            const isBoardIdea = boardIdeas.fromText.includes(text);
             return (
               <div key={i} className="flex flex-col gap-1">
-                <div className="p-4 bg-primary-foreground border rounded-md relative group">
+                <div className="p-2 bg-primary-foreground border rounded-md relative group">
                   <Button
                     variant="outline"
                     size="icon"
@@ -284,7 +284,12 @@ const ImprovementOutput = ({
                   className="w-fit"
                   size="sm"
                   disabled={isBoardIdea}
-                  onClick={() => setBoardIdeas([text, ...boardIdeas])}>
+                  onClick={() =>
+                    setBoardIdeas((prev) => ({
+                      ...prev,
+                      fromText: [text, ...prev.fromText],
+                    }))
+                  }>
                   {isBoardIdea ? <Check className="w-4 h-4" /> : <Plus />}{" "}
                   <span className="text-xs">Add to Board</span>
                 </Button>

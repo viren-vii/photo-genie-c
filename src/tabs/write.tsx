@@ -20,7 +20,7 @@ export type MessageProps = {
 
 const Message = ({ message }: { message: MessageProps }) => {
   const [boardIdeas, setBoardIdeas] = useAtom(boardIdeasAtom);
-  const alreadyAdded = boardIdeas.includes(message.content);
+  const alreadyAdded = boardIdeas.fromText.includes(message.content);
 
   return (
     <div className={`flex flex-col gap-2 my-2 `}>
@@ -56,7 +56,12 @@ const Message = ({ message }: { message: MessageProps }) => {
           variant="outline"
           className="w-fit"
           disabled={alreadyAdded}
-          onClick={() => setBoardIdeas((prev) => [message.content, ...prev])}>
+          onClick={() =>
+            setBoardIdeas((prev) => ({
+              ...prev,
+              fromText: [message.content, ...prev.fromText],
+            }))
+          }>
           {alreadyAdded ? (
             <CheckIcon className="w-4 h-4" />
           ) : (

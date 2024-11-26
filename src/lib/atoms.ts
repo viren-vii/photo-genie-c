@@ -9,7 +9,10 @@ export const ThreadDataKey = "threadData";
 const activeThreadAtom = atom<MenuItem | null>(null);
 const threadsAtom = atom<MenuItem[]>([]);
 
-const boardIdeasAtom = atom<string[]>([]);
+const boardIdeasAtom = atom<{ fromText: string[]; fromImage: string[] }>({
+  fromText: [],
+  fromImage: [],
+});
 const finalThoughtsAtom = atom<string>("");
 
 const seeTabDataAtom = atom<string | null>(null);

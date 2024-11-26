@@ -1,4 +1,4 @@
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { boardIdeasAtom, finalThoughtsAtom } from "../lib/atoms";
 import { CopyIcon, Hash, PencilIcon, Trash2, XIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -17,6 +17,12 @@ import {
 } from "../components/ui/dialog";
 import { useEffect, useState } from "react";
 import Loader from "../components/ui/loader";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 
 const TagsDisplayDialog = ({
   tags,
@@ -58,25 +64,90 @@ const TagsDisplayDialog = ({
           ))}
         </div>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Close</Button>
-          </DialogClose>
-          <Button
-            onClick={() => {
-              navigator.clipboard.writeText(tagsArray.join(" "));
-              onOpenChange(false);
-            }}>
-            <CopyIcon className="w-4 h-4" />
-            Copy & Close
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+            <Button
+              onClick={() => {
+                navigator.clipboard.writeText(tagsArray.join(" "));
+                onOpenChange(false);
+              }}>
+              <CopyIcon className="w-4 h-4" />
+              Copy & Close
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
 
-const Board = () => {
+const BoardContent = ({ board }: { board: "fromText" | "fromImage" }) => {
   const [boardIdeas, setBoardIdeas] = useAtom(boardIdeasAtom);
+  const setFinalThoughts = useSetAtom(finalThoughtsAtom);
+
+  const currentBoardIdeas = boardIdeas[board];
+  return currentBoardIdeas.length > 0 ? (
+    currentBoardIdeas.map((data, index) => (
+      <div
+        key={`board-content-${index}`}
+        className="bg-primary-foreground mb-2 group rounded-md p-2 px-4 border border-border relative">
+        <div className="flex absolute right-2 -top-2 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => setFinalThoughts((prev) => prev + "\n" + data)}>
+            <PencilIcon className="w-4 h-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            color="destructive"
+            onClick={() =>
+              setBoardIdeas((prev) => ({
+                ...prev,
+                [board]: prev[board].filter((idea) => idea !== data),
+              }))
+            }>
+            <XIcon className="w-4 h-4 text-destructive" />
+          </Button>
+        </div>
+        <Markdown className="w-fit">{data}</Markdown>
+      </div>
+    ))
+  ) : (
+    <p className="text-center text-sm text-muted-foreground">
+      Nothing added to the board yet
+    </p>
+  );
+};
+
+const BoardTabs = () => {
+  return (
+    <Tabs
+      defaultValue="fromText"
+      className="bg-secondary rounded-md p-2 border">
+      <TabsList className="w-full">
+        <TabsTrigger value="fromText">From Text</TabsTrigger>
+        <TabsTrigger value="fromImage">From Image</TabsTrigger>
+      </TabsList>
+      <TabsContent value="fromText">
+        <ScrollArea className="h-[350px]">
+          <BoardContent board="fromText" />
+          <ScrollBar />
+        </ScrollArea>
+      </TabsContent>
+      <TabsContent value="fromImage">
+        <ScrollArea className="h-[350px]">
+          <BoardContent board="fromImage" />
+          <ScrollBar />
+        </ScrollArea>
+      </TabsContent>
+    </Tabs>
+  );
+};
+const Board = () => {
   const [finalThoughts, setFinalThoughts] = useAtom(finalThoughtsAtom);
   const [hashTags, setHashTags] = useState<string>("");
   const [showHashTagsDialog, setShowHashTagsDialog] = useState<boolean>(false);
@@ -110,43 +181,7 @@ const Board = () => {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-lg font-semibold">Storming Board</h1>
-          <ScrollArea className="h-[450px] p-2 border rounded-md bg-muted">
-            {boardIdeas.length > 0 ? (
-              boardIdeas.map((data, index) => (
-                <div
-                  key={`board-content-${index}`}
-                  className="bg-primary-foreground my-2 group rounded-md p-2 px-4 border border-border relative">
-                  <div className="flex absolute right-2 -top-2 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() =>
-                        setFinalThoughts((prev) => prev + "\n" + data)
-                      }>
-                      <PencilIcon className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      color="destructive"
-                      onClick={() =>
-                        setBoardIdeas((prev) =>
-                          prev.filter((idea) => idea !== data)
-                        )
-                      }>
-                      <XIcon className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                  <Markdown className="w-fit">{data}</Markdown>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-sm text-muted-foreground">
-                Nothing added to the board yet
-              </p>
-            )}
-            <ScrollBar />
-          </ScrollArea>
+          <BoardTabs />
         </div>
 
         <div className="flex flex-col gap-2">

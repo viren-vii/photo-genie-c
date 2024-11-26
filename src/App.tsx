@@ -44,23 +44,27 @@ function App() {
 
   // Load active thread data from local storage or clear it if it doesn't exist
   useEffect(() => {
-    (async () => {
-      const localActiveThreadData = await getFromStorage(
-        `${activeThread?.threadId}`
-      );
-      if (localActiveThreadData) {
-        const parsedData: TActiveThreadData = JSON.parse(localActiveThreadData);
-        setBoardIdeas(parsedData.boardTab.ideas);
-        setFinalThoughts(parsedData.boardTab.finalThoughts);
-        setMessages(parsedData.writeTab.messages);
-        setImproveTabOutput(parsedData.improveTab.output);
-      } else {
-        setBoardIdeas([]);
-        setFinalThoughts("");
-        setMessages([]);
-        setImproveTabOutput([]);
-      }
-    })();
+    if (activeThread?.threadId) {
+      (async () => {
+        const localActiveThreadData = await getFromStorage(
+          `${activeThread?.threadId}`
+        );
+        if (localActiveThreadData) {
+          const parsedData: TActiveThreadData = JSON.parse(
+            localActiveThreadData
+          );
+          setBoardIdeas(parsedData.boardTab.ideas);
+          setFinalThoughts(parsedData.boardTab.finalThoughts);
+          setMessages(parsedData.writeTab.messages);
+          setImproveTabOutput(parsedData.improveTab.output);
+        } else {
+          setBoardIdeas({ fromText: [], fromImage: [] });
+          setFinalThoughts("");
+          setMessages([]);
+          setImproveTabOutput([]);
+        }
+      })();
+    }
   }, [activeThread]);
 
   // Save active thread data to local storage everytime it updates
@@ -68,7 +72,7 @@ function App() {
     if (activeThread?.threadId) {
       setToStorage(`${activeThread?.threadId}`, activeThreadData);
     }
-  }, [activeThreadData]);
+  }, [activeThreadData, activeThread]);
 
   return (
     <Layout>{!activeThread ? <Menu /> : <AppTabs className="w-full" />}</Layout>
