@@ -11,6 +11,7 @@ import {
 } from "../lib/atoms";
 import { useAtom, useAtomValue } from "jotai";
 import { CheckIcon, PlusIcon } from "lucide-react";
+import Loader from "../components/ui/loader";
 
 export type MessageProps = {
   role: "user" | "assistant";
@@ -138,6 +139,7 @@ const WriteTab = () => {
             disabled={loading}
           />
           <Button onClick={generate} disabled={loading || prompt.length === 0}>
+            {loading && <Loader />}
             {loading ? "Thinking..." : "Generate"}
           </Button>
         </div>

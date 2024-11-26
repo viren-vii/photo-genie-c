@@ -18,6 +18,8 @@ import {
   X,
   Plus,
   Check,
+  Sparkles,
+  Newspaper,
 } from "lucide-react";
 import { NanoPrompt } from "../utils/nano";
 import {
@@ -30,6 +32,7 @@ import {
 import { Button } from "../components/ui/button";
 import Loader from "../components/ui/loader";
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
+import Markdown from "markdown-to-jsx";
 
 const RewriteOptions = [
   {
@@ -112,23 +115,38 @@ const ImprovementInput = ({
     format: "plain-text",
   });
 
-  const rewrite = async () => {
+  const processText = async (type: "rewrite" | "ideate" | "title") => {
     setIsLoading(true);
-    const rewriterNano = new NanoPrompt({
-      systemPrompt: `
-      You are an expert paraphraser. You are supposed to rewrite the text provided by the user based on following instructions.
+    const systemPrompt =
+      type === "rewrite"
+        ? `You are an expert paraphraser. You are supposed to rewrite the text provided by the user based on following instructions.
       Try not to return the same text as the user provided.
       You cannot change the meaning of the text or introduce any new information.
-      Stick to the information provided by the user.
       Follow these rules strictly:
       1. Maintain a ${selectedOptions.tone} tone throughout
       2. Length requirement: ${selectedOptions.length}. It is relative to the input that you will be provided.
       3. You can use ${selectedOptions.format} format.
       4. Be concise and direct.
-      5. Do not add any additional text or comments.
-      6. You are supposed to give output strictly. Not chat with the user.
-      `,
-    });
+      5. Do not add any additional text or comments.`
+        : type === "ideate"
+        ? `You are an expert ideator. You are supposed to ideate the text provided by the user based on following instructions.
+      You are supposed to give 5 ideas to the user based on the text provided.
+      Do not deviate from the information in the text provided. Ideas should be logical and make sense in reference to the text provided.
+      Follow these rules strictly:
+      1. Ideas should be more ${selectedOptions.tone} in tone and style.
+      2. Length requirement: ${selectedOptions.length}. Give only headlines if length is shorter, else you can give more details.
+      3. You must return the response in ${selectedOptions.format} format.
+      4. Be concise and direct.
+      5. Do not add any additional text or comments.`
+        : `You are an expert title generator. Imagine that you are going to write a blog post or article based on the text provided.
+      You are supposed to generate a title for the text provided by the user based on following instructions.
+      Title should be ${selectedOptions.tone} in tone and style. Try to be creative and unique.
+      Follow these rules strictly:
+      1. Title should be ${selectedOptions.length} in length.
+      2. You must return the response in ${selectedOptions.format} format.
+      3. Title should be concise and direct.
+      4. Do not add any additional text or comments.`;
+    const rewriterNano = new NanoPrompt({ systemPrompt });
 
     const result = await rewriterNano.doPrompt(improveTabInput || "");
     setImprovedText([result, ...improvedText]);
@@ -138,7 +156,7 @@ const ImprovementInput = ({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="font-bold">Text to rewrite:</h1>
+        <h1 className="font-bold">Your raw text:</h1>
         <Textarea
           value={improveTabInput || ""}
           onChange={(e) => setImproveTabInput(e.target.value)}
@@ -178,18 +196,44 @@ const ImprovementInput = ({
           </div>
         ))}
       </div>
-      <Button className="w-fit mx-auto" onClick={rewrite} disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader />
-            <span>Rewriting...</span>
-          </>
-        ) : (
-          <>
-            Rewrite Text <WandSparkles />
-          </>
-        )}
-      </Button>
+      <div className="flex gap-2 justify-center">
+        <Button onClick={() => processText("rewrite")} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader />
+              <span>Rewriting...</span>
+            </>
+          ) : (
+            <>
+              Rewrite <WandSparkles />
+            </>
+          )}
+        </Button>
+        <Button onClick={() => processText("ideate")} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader />
+              <span>Ideating...</span>
+            </>
+          ) : (
+            <>
+              Ideate <Sparkles />
+            </>
+          )}
+        </Button>
+        <Button onClick={() => processText("title")} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader />
+              <span>Generating Title...</span>
+            </>
+          ) : (
+            <>
+              Generate Title <Newspaper />
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 };
@@ -204,24 +248,24 @@ const ImprovementOutput = ({
   const [boardIdeas, setBoardIdeas] = useAtom(boardIdeasAtom);
   return (
     improvedText.length > 0 && (
-      <ScrollArea className="h-full px-4">
+      <ScrollArea className="h-full p-4 bg-muted rounded-md border">
         <div className="flex flex-col gap-4">
-          <h1 className="font-bold">Improved Text:</h1>
+          <h1 className="font-bold">The output:</h1>
           {improvedText.map((text, i) => {
             const isBoardIdea = boardIdeas.includes(text);
             return (
               <div key={i} className="flex flex-col gap-1">
-                <div className="p-4 bg-muted rounded-md relative">
+                <div className="p-4 bg-primary-foreground border rounded-md relative group">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="absolute top-[-2px] right-[-2px]"
+                    className="absolute right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     onClick={() =>
                       setImprovedText(improvedText.filter((_, j) => j !== i))
                     }>
                     <X className="w-4 h-4 text-destructive" />
                   </Button>
-                  {text}
+                  <Markdown>{text}</Markdown>
                 </div>
                 <Button
                   variant="outline"

@@ -26,6 +26,7 @@ import {
 import { Input } from "../components/ui/input";
 import { cn } from "../lib/utils";
 import { removeFromStorage } from "../utils/chrome.storage";
+import Loader from "../components/ui/loader";
 
 export type MenuItem = {
   title: string;
@@ -66,6 +67,7 @@ const DeleteThreadDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={deleteThread} disabled={loading}>
+            {loading && <Loader />}
             {loading ? "Deleting" : "Continue"}
           </AlertDialogAction>
         </AlertDialogFooter>
