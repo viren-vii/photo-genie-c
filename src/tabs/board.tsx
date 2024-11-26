@@ -1,16 +1,14 @@
 import { useAtom } from "jotai";
-import { boardIdeasAtom } from "../lib/atoms";
+import { boardIdeasAtom, finalThoughtsAtom } from "../lib/atoms";
 import { PencilIcon, XIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
 import Markdown from "markdown-to-jsx";
-import { useState } from "react";
 import { Textarea } from "../components/ui/textarea";
 
 const Board = () => {
   const [boardIdeas, setBoardIdeas] = useAtom(boardIdeasAtom);
-
-  const [finalThoughts, setFinalThoughts] = useState("");
+  const [finalThoughts, setFinalThoughts] = useAtom(finalThoughtsAtom);
 
   return (
     <div className="flex flex-col gap-2">

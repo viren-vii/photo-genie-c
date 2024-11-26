@@ -7,21 +7,18 @@ import {
 } from "../components/ui/tabs";
 import WriteTab from "./write";
 import SeeTab from "./see";
-import { CreativeAssistantBasePrompt, NanoPrompt } from "../utils/nano";
+import { basePrompts, NanoPrompt } from "../utils/nano";
 import { cn } from "../lib/utils";
 import { useAtom, useSetAtom } from "jotai";
 import {
   activeThreadAtom,
   seeTabDataAtom,
-  improveTabDataAtom,
-  ThreadDataKey,
+  improveTabInputAtom,
   activeTabAtom,
   nanoPromptAtom,
-  messagesAtom,
 } from "../lib/atoms";
 import { Button } from "../components/ui/button";
 import { ChevronLeft } from "lucide-react";
-import { getFromStorage, setToStorage } from "../utils/chrome.storage";
 import Board from "./board";
 import Improve from "./improve";
 
@@ -31,18 +28,18 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
   const [nano, setNano] = useAtom(nanoPromptAtom);
   useEffect(() => {
     (async () => {
-      const nano = new NanoPrompt(CreativeAssistantBasePrompt);
+      const nano = new NanoPrompt({
+        systemPrompt: basePrompts.creativeAssistant,
+      });
       console.log("reloading nano");
       setNano(nano);
     })();
   }, []);
 
-  const [messages, setMessages] = useAtom(messagesAtom);
   const [activeTab, setActiveTab] = useAtom(activeTabAtom);
 
   const [activeThread, setActiveThread] = useAtom(activeThreadAtom);
-  const storageKey = `${ThreadDataKey}-${activeThread?.threadId}`;
-  const setImproveTabData = useSetAtom(improveTabDataAtom);
+  const setImproveTabInput = useSetAtom(improveTabInputAtom);
   const setSeeTabData = useSetAtom(seeTabDataAtom);
 
   useEffect(() => {
@@ -50,7 +47,7 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
       try {
         if (info.selectionText) {
           console.log("[App] Context menu: handling text", info.selectionText);
-          setImproveTabData(info.selectionText);
+          setImproveTabInput(info.selectionText);
           setActiveTab("write");
         } else if (info.srcUrl && info.mediaType === "image") {
           console.log("[App] Context menu: handling image", info.srcUrl);
@@ -65,25 +62,6 @@ const AppTabs = ({ className }: React.HTMLAttributes<HTMLDivElement>) => {
     chrome.contextMenus?.onClicked.addListener(listener);
     return () => chrome.contextMenus?.onClicked.removeListener(listener);
   }, []);
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      (async () => {
-        setToStorage(storageKey, {
-          threadId: activeThread?.threadId,
-          systemPrompt: CreativeAssistantBasePrompt,
-          messages,
-        });
-      })();
-    }
-  }, [messages, activeThread, storageKey]);
-
-  useEffect(() => {
-    (async () => {
-      const oldThreadData = await getFromStorage(storageKey);
-      setMessages(oldThreadData ? JSON.parse(oldThreadData)?.messages : []);
-    })();
-  }, [activeThread, storageKey]);
 
   if (!nano) return <div>Loading session...</div>;
 

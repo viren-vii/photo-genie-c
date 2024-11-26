@@ -21,3 +21,11 @@ export const setToStorage = async (key: string, value: unknown) => {
     localStorage.setItem(key, JSON.stringify(value));
   }
 };
+
+export const removeFromStorage = async (key: string) => {
+  if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+    await chrome.storage.local.remove(key);
+  } else {
+    localStorage.removeItem(key);
+  }
+};

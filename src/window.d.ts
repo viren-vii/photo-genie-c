@@ -1,16 +1,16 @@
 interface Window {
-  ai: AI;
-  summarizer: AISummarizerFactory;
-  writer: AIWriterFactory;
-  rewriter: AIRewriterFactory;
+  readonly ai: AI;
 }
 
 interface WorkerGlobalScope {
-  ai: AI;
+  readonly ai: AI;
 }
 
 interface AI {
-  languageModel: AILanguageModelFactory;
+  readonly languageModel: AILanguageModelFactory;
+  readonly summarizer: AISummarizerFactory;
+  readonly writer: AIWriterFactory;
+  readonly rewriter: AIRewriterFactory;
 }
 
 interface AICreateMonitor extends EventTarget {
@@ -21,13 +21,7 @@ interface AICreateMonitor extends EventTarget {
 
 type AICreateMonitorCallback = (monitor: AICreateMonitor) => void;
 
-type AICapabilityAvailability =
-  | "readily"
-  | "after-download"
-  | "no"
-  | "available"
-  | "unavailable"
-  | "unknown";
+type AICapabilityAvailability = "readily" | "after-download" | "no";
 
 // LanguageModel
 

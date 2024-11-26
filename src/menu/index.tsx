@@ -25,6 +25,7 @@ import {
 } from "../components/ui/dialog";
 import { Input } from "../components/ui/input";
 import { cn } from "../lib/utils";
+import { removeFromStorage } from "../utils/chrome.storage";
 
 export type MenuItem = {
   title: string;
@@ -45,6 +46,7 @@ const DeleteThreadDialog = ({
     e.stopPropagation();
     setLoading(true);
     setThreads(threads.filter((t) => t.threadId !== thread.threadId));
+    removeFromStorage(thread.threadId);
     setLoading(false);
   };
 

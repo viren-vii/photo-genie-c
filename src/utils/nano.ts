@@ -1,101 +1,82 @@
 export class NanoPrompt {
   session!: AILanguageModel;
+  private initPromise: Promise<void>;
 
-  constructor(basePrompt: string) {
-    this.initSession(basePrompt);
+  constructor(options?: AILanguageModelCreateOptions) {
+    this.initPromise = this.initSession(options);
   }
 
-  private async initSession(basePrompt: string) {
-    this.session = await window.ai.languageModel.create({
-      systemPrompt: basePrompt,
-    });
+  private async initSession(options?: AILanguageModelCreateOptions) {
+    this.session = await window.ai.languageModel.create(options);
+    console.log("language model created", this.session);
   }
 
-  doPrompt = async (prompt: string) => {
-    const result = await this.session.prompt(prompt);
+  doPrompt = async (input: string, options?: AILanguageModelPromptOptions) => {
+    await this.initPromise; // Wait for initialization to complete
+    if (!this.session) {
+      throw new Error("Language model session not initialized");
+    }
+    const result = await this.session.prompt(input, options);
     return result;
   };
 }
 
-export const CreativeAssistantBasePrompt = `You are an powerful AI assistant to help writers and creative content creators called "Creative Buddy." This tool will assist in overcoming creative blocks, refining drafts, and enhancing their content creation process.`;
-
-type SummarizerInitProps = {
-  sharedContext: string;
-  type: AISummarizerType;
-  length: AISummarizerLength;
-};
-
 export class NanoSummarizer {
   session!: AISummarizer;
-  constructor({ sharedContext, type, length }: SummarizerInitProps) {
-    this.initSession({ sharedContext, type, length });
+  private initPromise: Promise<void>;
+
+  constructor(options?: AISummarizerCreateOptions) {
+    this.initPromise = this.initSession(options);
   }
 
-  private async initSession({
-    sharedContext,
-    type,
-    length,
-  }: SummarizerInitProps) {
-    this.session = await window.summarizer.create({
-      sharedContext: sharedContext,
-      type: type,
-      length: length,
-    });
+  private async initSession(options?: AISummarizerCreateOptions) {
+    this.session = await window.ai.summarizer.create(options);
+    console.log("summarizer created", this.session);
   }
 }
-
-type WriterInitProps = {
-  sharedContext: string;
-  tone: AIWriterTone;
-  length: AIWriterLength;
-  format: AIWriterFormat;
-};
-
 export class NanoWriter {
   session!: AIWriter;
-  constructor({ sharedContext, tone, length, format }: WriterInitProps) {
-    this.initSession({ sharedContext, tone, length, format });
+  private initPromise: Promise<void>;
+
+  constructor(options?: AIWriterCreateOptions) {
+    this.initPromise = this.initSession(options);
   }
 
-  private async initSession({
-    sharedContext,
-    tone,
-    length,
-    format,
-  }: WriterInitProps) {
-    this.session = await window.writer.create({
-      sharedContext: sharedContext,
-      tone: tone,
-      length: length,
-      format: format,
-    });
+  private async initSession(options?: AIWriterCreateOptions) {
+    this.session = await window.ai.writer.create(options);
+    console.log("writer created", this.session);
   }
 }
-
-type RewriterInitProps = {
-  sharedContext: string;
-  tone: AIRewriterTone;
-  format: AIRewriterFormat;
-  length: AIRewriterLength;
-};
-
 export class NanoRewriter {
-  session!: AIRewriter;
-  constructor({ sharedContext, tone, format, length }: RewriterInitProps) {
-    this.initSession({ sharedContext, tone, format, length });
+  private session: AIRewriter | null = null;
+  private initPromise: Promise<void>;
+
+  constructor(options?: AIRewriterCreateOptions) {
+    this.initPromise = this.initSession(options);
   }
 
-  private async initSession({
-    sharedContext,
-    tone,
-    format,
-    length,
-  }: RewriterInitProps) {
-    this.session = await window.rewriter.create({
-      sharedContext: sharedContext,
-      tone: tone,
-      format: format,
-      length: length,
-    });
+  private async initSession(options?: AIRewriterCreateOptions) {
+    this.session = await window.ai.rewriter.create(options);
+    console.log("rewriter created", this.session);
   }
+
+  rewrite = async ({
+    input,
+    options,
+  }: {
+    input: string;
+    options?: AIRewriterRewriteOptions;
+  }) => {
+    await this.initPromise; // Wait for initialization to complete
+    if (!this.session) {
+      throw new Error("Rewriter session not initialized");
+    }
+    const result = await this.session.rewrite(input, options);
+    return result;
+  };
 }
+
+export const basePrompts = {
+  creativeAssistant: `You are an powerful AI assistant to help writers and creative content creators called "Creative Buddy." This tool will assist in overcoming creative blocks, refining drafts, and enhancing their content creation process.`,
+  creativeRewriter: `You are an powerful AI assistant to help writers and creative content creators called "Creative Buddy." This tool will assist in overcoming creative blocks, refining drafts, and enhancing their content creation process.`,
+};
